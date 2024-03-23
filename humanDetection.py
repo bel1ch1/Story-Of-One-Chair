@@ -1,24 +1,31 @@
+import numpy as np
 import cv2
-import time
 
-person_cascade = cv2.CascadeClassifier('humanCascad/haarcascade_fullbody.xml')
-#cap = cv2.VideoCapture('People .mkv') # for video
-cap = cv2.VideoCapture(0) # webcam video
+cascade = cv2.CascadeClassifier('cascads/haarcascade_upperbody.xml');
 
-img_index = 0
+cap = cv2.VideoCapture(0)
+
 while True:
     ret, frame = cap.read()
+
     if ret:
-        frame = cv2.resize(frame,(640,360))
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY) # Haar-cascade classifier needs a grayscale image
-        rects = person_cascade.detectMultiScale(gray_frame)
-        
-            
-        # for (x, y, w, h) in rects:
-        #     cv2.rectangle(frame, (x,y), (x+w,y+h),(0,255,0),2)
-        cv2.imshow("preview", frame)
-        #cv2.imwrite('img/img'+str(img_index)+'.jpg',frame)
-        img_index += 1
-    k = cv2.waitKey(1)
-    if k & 0xFF == ord("q"): # Exit condition
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        body = cascade.detectMultiScale(
+            gray,
+            scaleFactor = 1.02,
+            minNeighbors = 3,
+            minSize = (30,30),
+            flags = cv2.CASCADE_SCALE_IMAGE
+        )
+        temp = 0
+        if body[0][0]:
+            for (x, y, w, h) in body:
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+        cv2.imshow('Upper Body', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+
+cap.release()
+cv2.destroyAllWindows()
